@@ -8,4 +8,18 @@ RUN sed -i \
     's@http://security.debian.org@https://mirrors.aliyun.com/debian-security@g' \
     /etc/apt/sources.list && \
     apt-get clean && \
-    apt-get update -y
+    apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+        openjdk-17-jdk \
+        git \
+        curl \
+        unzip \
+        sudo \
+        && rm -rf /var/lib/apt/lists/*
+
+ARG USERNAME=dev
+RUN useradd -m -s /bin/bash $USERNAME \
+    && echo "$USERNAME ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME
+
+USER $USERNAME
+WORKDIR /home/$USERNAME
