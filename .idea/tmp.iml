@@ -5,6 +5,7 @@
       <option name="os" value="linux" />
     </buildTags>
   </component>
+  <component name="GoModuleSettings" enabled="true" />
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
