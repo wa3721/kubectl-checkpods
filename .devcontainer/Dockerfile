@@ -16,10 +16,3 @@ RUN sed -i \
         unzip \
         sudo \
         && rm -rf /var/lib/apt/lists/*
-
-ARG USERNAME=dev
-RUN useradd -m -s /bin/bash $USERNAME \
-    && echo "$USERNAME ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME
-
-USER $USERNAME
-WORKDIR /home/$USERNAME
