@@ -1,8 +1,9 @@
-#忽略个人idea配置
+# 忽略个人 idea 配置
 .idea/
 
-##
+# 忽略 ca.crt 和 minikube-config
 ca.crt
 minikube-config
-./profiles
-./profiles/minikube
+
+# 忽略 profiles 目录及其所有内容
+profiles/
