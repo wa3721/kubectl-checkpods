@@ -307,8 +307,8 @@ func (e *Engine) OnScanError(ns, pod, container string, err error) {
 		Timestamp: time.Now(),
 		Namespace: ns,
 		PodName:   pod,
-		Status:    types.PodStatusError,
-		Message:   fmt.Sprintf("[%s] scan error: %v", container, err),
+		Status:    types.PodStatusWarning,
+		Message:   fmt.Sprintf("[%s] %v", container, err),
 	})
 }
 

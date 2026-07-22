@@ -114,6 +114,10 @@ func (c *ConsoleNotifier) OnPodEvent(event types.PodEvent) {
 		fmt.Printf("%s [INFO] %s/%s deleted\n",
 			c.color(colorYellow, time.Now().Format(time.RFC3339)),
 			event.Namespace, event.PodName)
+	case types.PodStatusWarning:
+		fmt.Printf("%s [WARN] %s/%s: %s\n",
+			c.color(colorYellow, time.Now().Format(time.RFC3339)),
+			event.Namespace, event.PodName, event.Message)
 	}
 }
 

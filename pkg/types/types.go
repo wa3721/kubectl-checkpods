@@ -23,6 +23,7 @@ const (
 	PodStatusOK         PodStatus = "ok"
 	PodStatusDeleted    PodStatus = "deleted"
 	PodStatusTimeout    PodStatus = "timeout"
+	PodStatusWarning    PodStatus = "warning"
 )
 
 // DeploymentPhase represents the phase of a rolling update.
