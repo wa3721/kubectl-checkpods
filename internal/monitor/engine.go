@@ -210,7 +210,13 @@ func (e *Engine) trackPod(pt *podTracker) {
 	e.notifier.OnPodEvent(result.event)
 
 	if !result.ok {
-		e.updateResult(false, false)
+		// Pod deleted during tracking (normal rolling update behavior):
+		// skip it entirely, don't count toward deployment pass/fail.
+		if result.event.Status == types.PodStatusDeleted {
+			return
+		}
+		// Pod timed out waiting for ready: deployment FAIL.
+		e.updateResult(false, true)
 		e.recordDeploymentResult(pt.deployment, pt.podName, false)
 		return
 	}
