@@ -123,6 +123,10 @@ func (e *Engine) registerPodInformer(ctx context.Context) {
 			if !ok {
 				return
 			}
+			// Same filter as Add: only pods created after startup
+			if pod.CreationTimestamp.Time.Before(e.startupTime) {
+				return
+			}
 			e.onNewPod(pod)
 		},
 	})
@@ -207,14 +211,16 @@ func (e *Engine) trackPod(pt *podTracker) {
 	if result == nil {
 		return
 	}
+
+	// Pod was deleted during tracking — normal rolling update, skip silently.
+	// Don't even print anything; only newly created pods matter.
+	if result.event.Status == types.PodStatusDeleted {
+		return
+	}
+
 	e.notifier.OnPodEvent(result.event)
 
 	if !result.ok {
-		// Pod deleted during tracking (normal rolling update behavior):
-		// skip it entirely, don't count toward deployment pass/fail.
-		if result.event.Status == types.PodStatusDeleted {
-			return
-		}
 		// Pod timed out waiting for ready: deployment FAIL.
 		e.updateResult(false, true)
 		e.recordDeploymentResult(pt.deployment, pt.podName, false)
