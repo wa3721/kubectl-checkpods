@@ -103,13 +103,12 @@ func (c *ConsoleNotifier) OnPodEvent(event types.PodEvent) {
 			event.Namespace, event.PodName, event.Message)
 	case types.PodStatusOK:
 		c.summary.podOK++
-		containers := ""
-		if len(event.Containers) > 0 {
-			containers = fmt.Sprintf(", containers: %v", event.Containers)
+		msg := event.Message
+		if msg == "" {
+			msg = fmt.Sprintf("%s/%s no errors in log scan", event.Namespace, event.PodName)
 		}
-		fmt.Printf("%s [OK] %s/%s no errors in log scan%s\n",
-			c.color(colorGreen, time.Now().Format(time.RFC3339)),
-			event.Namespace, event.PodName, containers)
+		fmt.Printf("%s [OK] %s\n",
+			c.color(colorGreen, time.Now().Format(time.RFC3339)), msg)
 	case types.PodStatusDeleted:
 		fmt.Printf("%s [INFO] %s/%s deleted\n",
 			c.color(colorYellow, time.Now().Format(time.RFC3339)),
@@ -151,38 +150,48 @@ func (c *ConsoleNotifier) OnExit(result types.MonitorResult) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
+	var passed, failed []types.DeploymentEvent
+	for _, d := range result.Deployments {
+		if d.PodsError > 0 {
+			failed = append(failed, d)
+		} else {
+			passed = append(passed, d)
+		}
+	}
+
 	fmt.Println()
 	fmt.Println("=" + stringsRepeat("=", 58))
 
-	// Per-deployment summary
-	for _, d := range result.Deployments {
-		status := "PASS"
-		clr := colorGreen
-		if d.PodsError > 0 {
-			status = "FAIL"
-			clr = colorRed
+	if len(passed) > 0 {
+		fmt.Printf("  Passed Deployments (%d):\n", len(passed))
+		for _, d := range passed {
+			fmt.Printf("    %s/%s  %s  (replicas: %d/%d ready)\n",
+				d.Namespace, d.Name,
+				c.color(colorGreen, "PASS"),
+				d.ReadyReplicas, d.DesiredReplicas)
 		}
-		fmt.Printf("  Deployment: %s/%s  %s\n",
-			d.Namespace, d.Name,
-			c.color(clr, status))
-		fmt.Printf("    Replicas: %d desired / %d ready / %d available\n",
-			d.DesiredReplicas, d.ReadyReplicas, d.AvailableReplicas)
-		fmt.Printf("    Pods: %d ok / %d error / %d total\n",
-			d.PodsOK, d.PodsError, d.PodsTotal)
 	}
 
-	// Overall summary
-	totalStatus := "PASS"
+	if len(failed) > 0 {
+		fmt.Printf("  Failed Deployments (%d):\n", len(failed))
+		for _, d := range failed {
+			fmt.Printf("    %s/%s  %s  (replicas: %d/%d ready, %d pod(s) with errors)\n",
+				d.Namespace, d.Name,
+				c.color(colorRed, "FAIL"),
+				d.ReadyReplicas, d.DesiredReplicas, d.PodsError)
+		}
+	}
+
+	totalStatus := "ALL PASS"
 	totalClr := colorGreen
-	if result.HasErrors {
-		totalStatus = "FAIL"
+	if len(failed) > 0 {
+		totalStatus = fmt.Sprintf("%d FAILED", len(failed))
 		totalClr = colorRed
 	}
 
 	fmt.Printf("  ---\n")
-	fmt.Printf("  Total: %s | pods: %d ok / %d error / %d timeout / %d total\n",
-		c.color(totalClr, totalStatus),
-		result.PodsOK, result.PodsError, result.PodsTimeout, result.PodsTotal)
+	fmt.Printf("  Result: %s | %d passed / %d failed / %d deployments\n",
+		c.color(totalClr, totalStatus), len(passed), len(failed), len(result.Deployments))
 	fmt.Printf("  Duration: %s\n", result.Duration.Round(time.Second))
 	fmt.Println("=" + stringsRepeat("=", 58))
 }

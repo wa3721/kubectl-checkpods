@@ -238,12 +238,16 @@ func (e *Engine) trackPod(pt *podTracker) {
 	} else {
 		e.updateResult(true, false)
 		e.recordDeploymentResult(pt.deployment, pt.podName, true)
+		msg := fmt.Sprintf("%s/%s: %s 内未检测到错误日志，Deployment %s 已就绪",
+			pt.namespace, pt.podName, e.cfg.LogDuration.Round(time.Second), pt.deployment)
 		e.notifier.OnPodEvent(types.PodEvent{
-			Timestamp:  time.Now(),
-			Namespace:  pt.namespace,
-			PodName:    pt.podName,
-			Deployment: pt.deployment,
-			Status:     types.PodStatusOK,
+			Timestamp:    time.Now(),
+			Namespace:    pt.namespace,
+			PodName:      pt.podName,
+			Deployment:   pt.deployment,
+			Status:       types.PodStatusOK,
+			ReadyLatency: time.Since(pt.startTime),
+			Message:      msg,
 		})
 	}
 }
