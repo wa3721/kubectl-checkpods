@@ -10,6 +10,7 @@ profiles/
 
 
 # 编译产物 / 可执行文件
+kubectl-checkpods
 *.exe
 *.dll
 *.so

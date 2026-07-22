@@ -1,7 +1,14 @@
 MINIKUBE_CONTAINER_ID := $(shell docker ps --filter "status=running" --format "{{.ID}}")
 KUBE_DIR := ./profiles/minikube
 
-.PHONY: kubeconfig-init
+.PHONY: build clean kubeconfig-init
+
+build:
+	go build -o kubectl-checkpods ./cmd/kubectl-checkpods/
+
+clean:
+	rm -f kubectl-checkpods
+
 kubeconfig-init:
 	docker cp $(shell docker ps --filter "status=running" --format "{{.ID}}"):/root/export-kube/config ./minikube-config
 

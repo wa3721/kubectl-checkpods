@@ -1,4 +1,4 @@
-module check-pod-error
+module kubectl-checkpods
 
 go 1.26.0
 
