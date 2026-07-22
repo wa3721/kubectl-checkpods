@@ -1,14 +1,17 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/kubernetes-helm-minikube
 {
-	"name": "Kubernetes - Minikube-in-Docker",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"name": "kubernetes-minikube-dev",
+
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
+
+	"privileged": true,
+
+	"appPort": ["33333:33333"],
+
 	"features": {
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {
-			"enableNonRootDocker": "true",
+			"enableNonRootDocker": "false",
 			"moby": "true"
 		},
 		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
@@ -18,25 +21,14 @@
 		}
 	},
 
+	"postCreateCommand": "minikube delete --purge >/dev/null 2>&1 || true && \\\nminikube start \\\n  --driver=docker \\\n  --apiserver-port=8443 \\\n --ports=0.0.0.0:33333:8443 \\\n  --apiserver-ips=$(hostname -i) \\\n  --listen-address=0.0.0.0 \\\n  --memory=4096 \\\n  --cpus=2 \\\n  --force && \\\nmkdir -p /root/export-kube && \\\nkubectl config view --raw > /root/export-kube/config && \\\ncp ~/.minikube/ca.crt /root/export-kube/ && \\\ncp ~/.minikube/profiles/minikube/client.crt /root/export-kube/ && \\\ncp ~/.minikube/profiles/minikube/client.key /root/export-kube/ && \\\necho 'kubeconfig exported to /root/export-kube/'",
 
+	"customizations": {
+		"jetbrains": {
+			"backend": "IntelliJ"
+		}
+	},
 
-	
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "kubectl version",
-
-	// Use 'postStartCommand' to run commands after the container is created like starting minikube.
-	// "postStartCommand": "nohup bash -c 'minikube start &' > minikube.log 2>&1",
-
-	// Configure tool-specific properties.
-  "customizations" : {
-    "jetbrains" : {
-      "backend" : "IntelliJ"
-    }
-  },
-
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	 "remoteUser": "root"
+	"remoteUser": "root",
+	"containerUser": "root"
 }

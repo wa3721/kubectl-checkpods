@@ -1,18 +1,19 @@
 FROM mcr.microsoft.com/devcontainers/base:bullseye
 
-# 换为 HTTPS + 国内镜像（阿里云）
-RUN sed -i \
-    's@http://deb.debian.org@https://mirrors.aliyun.com@g' \
-    /etc/apt/sources.list && \
-    sed -i \
-    's@http://security.debian.org@https://mirrors.aliyun.com/debian-security@g' \
-    /etc/apt/sources.list && \
+USER root
+
+# 换国内源
+RUN sed -i 's@http://deb.debian.org@https://mirrors.aliyun.com@g' /etc/apt/sources.list && \
+    sed -i 's@http://security.debian.org@https://mirrors.aliyun.com/debian-security@g' /etc/apt/sources.list && \
     apt-get clean && \
-    apt-get update -y && \
-    apt-get install -y --no-install-recommends \
-        openjdk-17-jdk \
-        git \
-        curl \
-        unzip \
-        sudo \
-        && rm -rf /var/lib/apt/lists/*
+    apt-get update -y
+
+# 安装必要工具
+RUN apt-get install -y --no-install-recommends \
+    curl \
+    wget \
+    git \
+    jq \
+    vim \
+    conntrack \
+    && rm -rf /var/lib/apt/lists/*

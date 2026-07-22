@@ -1,2 +1,8 @@
 #忽略个人idea配置
 .idea/
+
+##
+ca.crt
+minikube-config
+./profiles
+./profiles/minikube
