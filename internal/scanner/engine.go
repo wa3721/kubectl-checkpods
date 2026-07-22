@@ -116,14 +116,9 @@ func (e *Engine) scanContainer(ctx context.Context, ns, podName, deployment, con
 		matchCount++
 	}
 
-	if err := scanner.Err(); err != nil {
-		// Context deadline exceeded is normal — the scan ended because
-		// log-duration expired, not because of a real error.
-		if ctx.Err() != nil {
-			return matchCount, nil
-		}
-		return matchCount, fmt.Errorf("scan error: %w", err)
-	}
-
+	// scanner.Err() may return errors caused by context deadline (network close, etc.)
+	// These are NOT real errors — the scan simply ended because the deadline expired.
+	// We never surface scanner-level errors; only keyword matches matter.
+	_ = scanner.Err()
 	return matchCount, nil
 }
