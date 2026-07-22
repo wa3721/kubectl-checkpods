@@ -27,15 +27,19 @@ type Engine struct {
 	matcher   *Matcher
 	dedup     *DedupWindow
 	callbacks ScanCallbacks
+	tailLines int64
+	logDuration time.Duration
 }
 
 // NewEngine creates a new scanner engine.
 func NewEngine(clientset kubernetes.Interface, cfg *config.Config, callbacks ScanCallbacks) *Engine {
 	return &Engine{
-		clientset: clientset,
-		matcher:   NewMatcher(cfg),
-		dedup:     NewDedupWindow(5 * time.Second),
-		callbacks: callbacks,
+		clientset:   clientset,
+		matcher:     NewMatcher(cfg),
+		dedup:       NewDedupWindow(5 * time.Second),
+		callbacks:   callbacks,
+		tailLines:   cfg.TailLines,
+		logDuration: cfg.LogDuration,
 	}
 }
 
@@ -76,10 +80,9 @@ func (e *Engine) ScanPodLogs(ctx context.Context, ns, podName, deployment string
 }
 
 func (e *Engine) scanContainer(ctx context.Context, ns, podName, deployment, containerName string) (int, error) {
-	tailLines := int64(100)
 	logOpts := &corev1.PodLogOptions{
 		Follow:    true,
-		TailLines: &tailLines,
+		TailLines: &e.tailLines,
 		Container: containerName,
 	}
 
