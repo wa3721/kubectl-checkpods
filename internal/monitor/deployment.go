@@ -54,8 +54,9 @@ func (ds *deploymentState) updateFromDeployment(deploy *appsv1.Deployment) {
 		if ds.phase == types.PhaseIdle {
 			ds.phase = types.PhaseInProgress
 		}
-	} else if ds.phase == types.PhaseInProgress {
-		// All replicas ready and available -> rollout complete
+	} else if ds.phase == types.PhaseIdle || ds.phase == types.PhaseInProgress {
+		// All replicas ready and available -> rollout complete.
+		// Covers both: new deployments (Idle→Complete) and rolling updates (InProgress→Complete).
 		if ds.podsError > 0 {
 			ds.phase = types.PhaseFailed
 		} else {
