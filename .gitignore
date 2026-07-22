@@ -7,3 +7,13 @@ minikube-config
 
 # 忽略 profiles 目录及其所有内容
 profiles/
+
+
+# 编译产物 / 可执行文件
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+*.out
+*.app
