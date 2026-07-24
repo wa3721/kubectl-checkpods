@@ -87,6 +87,10 @@ func (c *ConsoleNotifier) OnPodEvent(event types.PodEvent) {
 	switch event.Status {
 	case types.PodStatusWaiting:
 		return
+	case types.PodStatusScanning:
+		fmt.Printf("%s [SCAN] %s/%s 开始扫描日志\n",
+			c.color(colorCyan, time.Now().Format(time.RFC3339)),
+			event.Namespace, event.PodName)
 	case types.PodStatusReady:
 		fmt.Printf("%s [READY] %s/%s (deploy: %s, took %v)\n",
 			c.color(colorGreen, time.Now().Format(time.RFC3339)),

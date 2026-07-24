@@ -231,6 +231,15 @@ func (e *Engine) trackPod(pt *podTracker) {
 	scanCtx, scanCancel := context.WithTimeout(e.ctx, e.cfg.LogDuration)
 	defer scanCancel()
 
+	e.notifier.OnPodEvent(types.PodEvent{
+		Timestamp:  time.Now(),
+		Namespace:  pt.namespace,
+		PodName:    pt.podName,
+		Deployment: pt.deployment,
+		Status:     types.PodStatusScanning,
+		Message:    fmt.Sprintf("%s/%s 开始扫描日志", pt.namespace, pt.podName),
+	})
+
 	totalMatches, err := e.scanner.ScanPodLogs(scanCtx, pt.namespace, pt.podName, pt.deployment)
 	if err != nil {
 		runtime.HandleError(fmt.Errorf("scan logs for %s/%s: %w", pt.namespace, pt.podName, err))
